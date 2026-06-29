@@ -53,13 +53,14 @@ async def test_list_projects_own_only(client: AsyncClient, test_session: async_s
     assert r2.json()[0]["title"] == "U2 Project"
 
 
-async def test_get_project_forbidden_other_client(client: AsyncClient, test_session: async_sessionmaker):
+async def test_get_project_other_client_returns_404(client: AsyncClient, test_session: async_sessionmaker):
+    """Cross-client access returns 404 (not 403) so project ID existence is not leaked."""
     uid1 = await _make_user(test_session, "u1@test.com")
     await _make_user(test_session, "u2@test.com")
     tok2 = await _token(client, "u2@test.com")
     pid = await _make_project(test_session, uid1)
     r = await client.get(f"/projects/{pid}", headers={"Authorization": f"Bearer {tok2}"})
-    assert r.status_code == 403
+    assert r.status_code == 404
 
 
 async def test_get_project_allowed_owner(client: AsyncClient, test_session: async_sessionmaker):
