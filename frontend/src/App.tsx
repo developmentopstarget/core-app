@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext'
 import ClientDashboard from './pages/ClientDashboard'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
+import ProjectDetail from './pages/ProjectDetail'
 import RegisterPage from './pages/RegisterPage'
 
 export default function App() {
@@ -21,6 +22,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ClientDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/projects/:id"
+            element={
+              <ProtectedRoute>
+                <ProjectDetail />
               </ProtectedRoute>
             }
           />
