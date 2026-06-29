@@ -11,5 +11,11 @@ class Settings(BaseSettings):
     app_env: str = "development"
     allowed_origins: list[str] = ["http://localhost:5173"]
 
+    secret_key: str = "change-me-in-production"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
+
+    database_url: str = "sqlite+aiosqlite:///./app.db"
+
 
 settings = Settings()

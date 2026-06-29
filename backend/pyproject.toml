@@ -12,7 +12,15 @@ dependencies = [
     "uvicorn[standard]>=0.30.0",
     "pydantic>=2.7.0",
     "pydantic-settings>=2.3.0",
+    "pydantic[email]>=2.7.0",
     "python-dotenv>=1.0.0",
+    "sqlalchemy>=2.0.0",
+    "greenlet>=3.0.0",
+    "aiosqlite>=0.20.0",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "bcrypt<5",
+    "python-multipart>=0.0.9",
 ]
 
 [project.optional-dependencies]
