@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
+  const { user, logout } = useAuth()
   const [open, setOpen] = useState(false)
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     isActive
       ? 'text-indigo-600 font-medium'
       : 'text-gray-600 hover:text-gray-900 transition-colors'
+
+  const portalHref = user?.role === 'admin' ? '/admin' : '/dashboard'
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -25,18 +29,38 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              to="/login"
-              className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
-            >
-              Login
-            </Link>
-            <Link
-              to="/register"
-              className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
-            >
-              Get Started
-            </Link>
+            {user ? (
+              <>
+                <span className="text-sm text-gray-500">{user.name}</span>
+                <Link
+                  to={portalHref}
+                  className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                >
+                  Portal
+                </Link>
+                <button
+                  onClick={logout}
+                  className="text-sm bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                >
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -64,15 +88,28 @@ export default function Navbar() {
           <NavLink to="/services" className={linkClass} onClick={() => setOpen(false)}>Services</NavLink>
           <br />
           <NavLink to="/projects" className={linkClass} onClick={() => setOpen(false)}>Projects</NavLink>
-          <div className="pt-2 border-t border-gray-100 flex gap-3">
-            <Link to="/login" className="text-sm text-gray-600 font-medium" onClick={() => setOpen(false)}>Login</Link>
-            <Link
-              to="/register"
-              className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium"
-              onClick={() => setOpen(false)}
-            >
-              Get Started
-            </Link>
+          <div className="pt-2 border-t border-gray-100 flex gap-3 flex-wrap">
+            {user ? (
+              <>
+                <Link to={portalHref} className="text-sm text-gray-700 font-medium" onClick={() => setOpen(false)}>
+                  Portal
+                </Link>
+                <button onClick={() => { logout(); setOpen(false) }} className="text-sm text-gray-600 font-medium">
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-sm text-gray-600 font-medium" onClick={() => setOpen(false)}>Login</Link>
+                <Link
+                  to="/register"
+                  className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium"
+                  onClick={() => setOpen(false)}
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
