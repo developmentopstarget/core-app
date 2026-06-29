@@ -5,7 +5,7 @@ from app.api.health import router as health_router
 from app.core.config import settings
 
 app = FastAPI(
-    title="fast-webapp-starter",
+    title="core-app",
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",

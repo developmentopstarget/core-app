@@ -1,4 +1,4 @@
-# fast-webapp-starter
+# core-app
 
 A production-style starter template for building web apps with a clean separation between frontend and backend.
 
@@ -18,7 +18,7 @@ Mobile-first layout by default. Frontend and backend are fully separate applicat
 ## Project Structure
 
 ```
-fast-webapp-starter/
+core-app/
   AGENTS.md              ← AI agent instructions
   CLAUDE.md              ← Claude Code instructions
   GEMINI.md              ← Gemini agent instructions

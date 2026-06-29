@@ -39,7 +39,7 @@ This file provides guidance for Google Gemini agents working in this repository.
 ## Project Structure
 
 ```
-fast-webapp-starter/
+core-app/
   frontend/          ← Vite + React + TypeScript + Tailwind
   backend/           ← FastAPI + Python
   AGENTS.md          ← Instructions for all AI agents
