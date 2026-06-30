@@ -28,7 +28,7 @@ import sys
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import AsyncSessionLocal, Base, engine
+from app.core.database import AsyncSessionLocal
 from app.models.user import User, UserRole
 from app.services.auth import get_user_by_email, hash_password
 
@@ -82,18 +82,20 @@ async def main() -> None:
     name = os.environ.get("ADMIN_NAME", "").strip()
     promote_existing = os.environ.get("ADMIN_PROMOTE_EXISTING", "").lower() == "true"
 
-    missing = [k for k, v in {"ADMIN_EMAIL": email, "ADMIN_PASSWORD": password, "ADMIN_NAME": name}.items() if not v]
+    missing = [
+        k
+        for k, v in {"ADMIN_EMAIL": email, "ADMIN_PASSWORD": password, "ADMIN_NAME": name}.items()
+        if not v
+    ]
     if missing:
         print(f"Error: missing required env vars: {', '.join(missing)}", file=sys.stderr)
         sys.exit(1)
 
-    # Ensure tables exist (safe to call on an already-initialised DB)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
     async with AsyncSessionLocal() as db:
         try:
-            msg = await run_create_admin(db, email=email, password=password, name=name, promote_existing=promote_existing)
+            msg = await run_create_admin(
+                db, email=email, password=password, name=name, promote_existing=promote_existing
+            )
             print(msg)
         except RuntimeError as exc:
             print(f"Error: {exc}", file=sys.stderr)

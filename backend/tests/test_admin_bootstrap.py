@@ -17,21 +17,35 @@ from app.models.user import User, UserRole
 from app.scripts.create_admin import run_create_admin
 from app.services.auth import hash_password
 
-
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-async def _make_client_user(session_factory: async_sessionmaker, email: str = "client@test.com") -> int:
+
+async def _make_client_user(
+    session_factory: async_sessionmaker, email: str = "client@test.com"
+) -> int:
     async with session_factory() as db:
-        user = User(name="Client", email=email, hashed_password=hash_password("password123"), role=UserRole.client)
+        user = User(
+            name="Client",
+            email=email,
+            hashed_password=hash_password("password123"),
+            role=UserRole.client,
+        )
         db.add(user)
         await db.commit()
         await db.refresh(user)
         return user.id
 
 
-async def _make_admin_user(session_factory: async_sessionmaker, email: str = "admin@test.com") -> int:
+async def _make_admin_user(
+    session_factory: async_sessionmaker, email: str = "admin@test.com"
+) -> int:
     async with session_factory() as db:
-        user = User(name="Admin", email=email, hashed_password=hash_password("password123"), role=UserRole.admin)
+        user = User(
+            name="Admin",
+            email=email,
+            hashed_password=hash_password("password123"),
+            role=UserRole.admin,
+        )
         db.add(user)
         await db.commit()
         await db.refresh(user)
@@ -46,27 +60,39 @@ async def _token(client: AsyncClient, email: str, password: str = "password123")
 
 # ── Register cannot create admin ───────────────────────────────────────────────
 
+
 async def test_register_always_creates_client(client: AsyncClient):
-    """Sending role=admin in the register body must be ignored — user is always created as client."""
+    """A role field in registration must not create an admin."""
     r = await client.post(
         "/auth/register",
-        json={"name": "Hacker", "email": "hacker@test.com", "password": "password123", "role": "admin"},
+        json={
+            "name": "Hacker",
+            "email": "hacker@test.com",
+            "password": "password123",
+            "role": "admin",
+        },
     )
     assert r.status_code == 201
     assert r.json()["role"] == "client"
 
 
 async def test_register_without_role_field_is_client(client: AsyncClient):
-    r = await client.post("/auth/register", json={"name": "Alice", "email": "alice@test.com", "password": "password123"})
+    r = await client.post(
+        "/auth/register",
+        json={"name": "Alice", "email": "alice@test.com", "password": "password123"},
+    )
     assert r.status_code == 201
     assert r.json()["role"] == "client"
 
 
 # ── Bootstrap script core logic ────────────────────────────────────────────────
 
+
 async def test_bootstrap_creates_admin(test_session: async_sessionmaker):
     async with test_session() as db:
-        msg = await run_create_admin(db, email="admin@test.com", password="adminpass1", name="Admin")
+        msg = await run_create_admin(
+            db, email="admin@test.com", password="adminpass1", name="Admin"
+        )
     assert "Admin created" in msg
     assert "admin@test.com" in msg
 
@@ -85,17 +111,27 @@ async def test_bootstrap_admin_can_login_and_access_admin_route(
 async def test_bootstrap_existing_admin_is_noop(test_session: async_sessionmaker):
     async with test_session() as db:
         await run_create_admin(db, email="admin@test.com", password="adminpass1", name="Admin")
-        msg = await run_create_admin(db, email="admin@test.com", password="adminpass1", name="Admin")
+        msg = await run_create_admin(
+            db, email="admin@test.com", password="adminpass1", name="Admin"
+        )
     assert "Already admin" in msg
     assert "Nothing to do" in msg
 
 
-async def test_bootstrap_existing_client_not_promoted_without_flag(test_session: async_sessionmaker):
+async def test_bootstrap_existing_client_not_promoted_without_flag(
+    test_session: async_sessionmaker,
+):
     await _make_client_user(test_session, "client@test.com")
 
     async with test_session() as db:
         with pytest.raises(RuntimeError, match="ADMIN_PROMOTE_EXISTING"):
-            await run_create_admin(db, email="client@test.com", password="password123", name="Client", promote_existing=False)
+            await run_create_admin(
+                db,
+                email="client@test.com",
+                password="password123",
+                name="Client",
+                promote_existing=False,
+            )
 
 
 async def test_bootstrap_existing_client_promoted_with_flag(
@@ -105,7 +141,11 @@ async def test_bootstrap_existing_client_promoted_with_flag(
 
     async with test_session() as db:
         msg = await run_create_admin(
-            db, email="client@test.com", password="password123", name="Client", promote_existing=True
+            db,
+            email="client@test.com",
+            password="password123",
+            name="Client",
+            promote_existing=True,
         )
     assert "Promoted" in msg
 
@@ -122,7 +162,10 @@ async def test_bootstrap_short_password_rejected(test_session: async_sessionmake
 
 # ── Cross-client project access returns 404, not 403 ──────────────────────────
 
-async def test_cross_client_project_returns_404(client: AsyncClient, test_session: async_sessionmaker):
+
+async def test_cross_client_project_returns_404(
+    client: AsyncClient, test_session: async_sessionmaker
+):
     """A client probing another client's project ID must get 404, not 403."""
     from app.models.project import Project
 
@@ -142,7 +185,9 @@ async def test_cross_client_project_returns_404(client: AsyncClient, test_sessio
     assert r.json()["detail"] == "Project not found"
 
 
-async def test_admin_can_still_access_any_project(client: AsyncClient, test_session: async_sessionmaker):
+async def test_admin_can_still_access_any_project(
+    client: AsyncClient, test_session: async_sessionmaker
+):
     """Admin must not be affected by the 404 change."""
     from app.models.project import Project
 

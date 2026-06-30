@@ -6,16 +6,22 @@ from app.models.user import User, UserRole
 from app.services.auth import hash_password
 
 
-async def _make_user(session_factory: async_sessionmaker, email: str, role: UserRole = UserRole.client) -> int:
+async def _make_user(
+    session_factory: async_sessionmaker, email: str, role: UserRole = UserRole.client
+) -> int:
     async with session_factory() as db:
-        user = User(name="Test", email=email, hashed_password=hash_password("password123"), role=role)
+        user = User(
+            name="Test", email=email, hashed_password=hash_password("password123"), role=role
+        )
         db.add(user)
         await db.commit()
         await db.refresh(user)
         return user.id
 
 
-async def _make_project(session_factory: async_sessionmaker, owner_id: int, title: str = "My Project") -> int:
+async def _make_project(
+    session_factory: async_sessionmaker, owner_id: int, title: str = "My Project"
+) -> int:
     async with session_factory() as db:
         project = Project(title=title, owner_id=owner_id)
         db.add(project)
@@ -53,7 +59,9 @@ async def test_list_projects_own_only(client: AsyncClient, test_session: async_s
     assert r2.json()[0]["title"] == "U2 Project"
 
 
-async def test_get_project_other_client_returns_404(client: AsyncClient, test_session: async_sessionmaker):
+async def test_get_project_other_client_returns_404(
+    client: AsyncClient, test_session: async_sessionmaker
+):
     """Cross-client access returns 404 (not 403) so project ID existence is not leaked."""
     uid1 = await _make_user(test_session, "u1@test.com")
     await _make_user(test_session, "u2@test.com")
@@ -72,7 +80,9 @@ async def test_get_project_allowed_owner(client: AsyncClient, test_session: asyn
     assert r.json()["id"] == pid
 
 
-async def test_get_project_admin_can_access_any(client: AsyncClient, test_session: async_sessionmaker):
+async def test_get_project_admin_can_access_any(
+    client: AsyncClient, test_session: async_sessionmaker
+):
     uid1 = await _make_user(test_session, "client@test.com")
     await _make_user(test_session, "admin@test.com", UserRole.admin)
     admin_token = await _token(client, "admin@test.com")

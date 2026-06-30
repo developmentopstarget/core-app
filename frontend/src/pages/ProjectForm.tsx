@@ -25,13 +25,14 @@ export default function ProjectForm() {
   const [notes, setNotes] = useState('')
   const [ownerId, setOwnerId] = useState<number | ''>('')
   const [milestones, setMilestones] = useState<MilestoneField[]>([])
+  const [loading, setLoading] = useState(isEdit)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    api.get<User[]>('/admin/users').then(setUsers)
+    const requests: Promise<unknown>[] = [api.get<User[]>('/admin/users').then(setUsers)]
     if (isEdit && id) {
-      api.get<Project>(`/projects/${id}`).then((p) => {
+      requests.push(api.get<Project>(`/projects/${id}`).then((p) => {
         setTitle(p.title)
         setDescription(p.description ?? '')
         setStatus(p.status)
@@ -39,9 +40,18 @@ export default function ProjectForm() {
         setPreviewUrl(p.preview_url ?? '')
         setNotes(p.notes ?? '')
         setOwnerId(p.owner_id)
-        setMilestones(p.milestones.map((m: Milestone) => ({ id: m.id, title: m.title, is_done: m.is_done, sort_order: m.sort_order })))
-      })
+        const loaded = p.milestones.map((m: Milestone) => ({
+          id: m.id,
+          title: m.title,
+          is_done: m.is_done,
+          sort_order: m.sort_order,
+        }))
+        setMilestones(loaded)
+      }))
     }
+    Promise.all(requests)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load project'))
+      .finally(() => setLoading(false))
   }, [id, isEdit])
 
   const addMilestone = () =>
@@ -63,6 +73,10 @@ export default function ProjectForm() {
         await api.patch(`/admin/projects/${id}`, {
           title, description: description || null, status, progress,
           preview_url: previewUrl || null, notes: notes || null, owner_id: ownerId,
+          milestones: milestones.map((milestone, index) => ({
+            ...milestone,
+            sort_order: index,
+          })),
         })
       } else {
         await api.post('/admin/projects', {
@@ -81,6 +95,10 @@ export default function ProjectForm() {
   }
 
   const inputClass = 'w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent'
+
+  if (loading) {
+    return <div className="min-h-screen bg-gray-50 p-10 text-center text-sm text-gray-500">Loading...</div>
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
@@ -133,8 +151,7 @@ export default function ProjectForm() {
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className={inputClass} />
           </div>
 
-          {!isEdit && (
-            <div>
+          <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-sm font-medium text-gray-700">Milestones</label>
                 <button type="button" onClick={addMilestone} className="text-xs text-indigo-600 font-medium hover:underline">+ Add</button>
@@ -147,6 +164,7 @@ export default function ProjectForm() {
                       value={m.title}
                       onChange={(e) => updateMilestone(i, 'title', e.target.value)}
                       placeholder={`Milestone ${i + 1}`}
+                      required
                       className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                     <input
@@ -160,8 +178,7 @@ export default function ProjectForm() {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+          </div>
 
           {error && <p className="text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 

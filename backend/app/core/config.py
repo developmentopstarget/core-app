@@ -1,3 +1,4 @@
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,6 +17,15 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
 
     database_url: str = "sqlite+aiosqlite:///./app.db"
+
+    @model_validator(mode="after")
+    def validate_production_settings(self) -> "Settings":
+        if self.app_env == "production":
+            if self.secret_key == "change-me-in-production" or len(self.secret_key) < 32:
+                raise ValueError("SECRET_KEY must be at least 32 characters in production")
+            if self.database_url.startswith("sqlite"):
+                raise ValueError("DATABASE_URL must use PostgreSQL in production")
+        return self
 
 
 settings = Settings()

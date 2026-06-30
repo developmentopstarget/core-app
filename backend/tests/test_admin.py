@@ -5,9 +5,13 @@ from app.models.user import User, UserRole
 from app.services.auth import hash_password
 
 
-async def _make_user(session_factory: async_sessionmaker, email: str, role: UserRole = UserRole.client) -> int:
+async def _make_user(
+    session_factory: async_sessionmaker, email: str, role: UserRole = UserRole.client
+) -> int:
     async with session_factory() as db:
-        user = User(name="Test", email=email, hashed_password=hash_password("password123"), role=role)
+        user = User(
+            name="Test", email=email, hashed_password=hash_password("password123"), role=role
+        )
         db.add(user)
         await db.commit()
         await db.refresh(user)
@@ -39,7 +43,9 @@ async def test_admin_list_users(client: AsyncClient, test_session: async_session
     assert len(r.json()) >= 1
 
 
-async def test_admin_create_and_list_projects(client: AsyncClient, test_session: async_sessionmaker):
+async def test_admin_create_and_list_projects(
+    client: AsyncClient, test_session: async_sessionmaker
+):
     uid = await _make_user(test_session, "client@test.com")
     headers = await _admin_headers(client, test_session)
 
@@ -48,7 +54,10 @@ async def test_admin_create_and_list_projects(client: AsyncClient, test_session:
         "owner_id": uid,
         "status": "active",
         "progress": 40,
-        "milestones": [{"title": "Phase 1", "is_done": True}, {"title": "Phase 2", "is_done": False}],
+        "milestones": [
+            {"title": "Phase 1", "is_done": True},
+            {"title": "Phase 2", "is_done": False},
+        ],
     }
     r = await client.post("/admin/projects", json=payload, headers=headers)
     assert r.status_code == 201
@@ -65,20 +74,59 @@ async def test_admin_update_project(client: AsyncClient, test_session: async_ses
     uid = await _make_user(test_session, "client@test.com")
     headers = await _admin_headers(client, test_session)
 
-    create = await client.post("/admin/projects", json={"title": "Old", "owner_id": uid}, headers=headers)
+    create = await client.post(
+        "/admin/projects", json={"title": "Old", "owner_id": uid}, headers=headers
+    )
     pid = create.json()["id"]
 
-    r = await client.patch(f"/admin/projects/{pid}", json={"title": "New", "progress": 80}, headers=headers)
+    r = await client.patch(
+        f"/admin/projects/{pid}", json={"title": "New", "progress": 80}, headers=headers
+    )
     assert r.status_code == 200
     assert r.json()["title"] == "New"
     assert r.json()["progress"] == 80
+
+
+async def test_admin_replaces_project_milestones(
+    client: AsyncClient, test_session: async_sessionmaker
+):
+    uid = await _make_user(test_session, "client@test.com")
+    headers = await _admin_headers(client, test_session)
+    created = await client.post(
+        "/admin/projects",
+        json={
+            "title": "Project",
+            "owner_id": uid,
+            "milestones": [{"title": "Old"}],
+        },
+        headers=headers,
+    )
+    project = created.json()
+    old_id = project["milestones"][0]["id"]
+
+    updated = await client.patch(
+        f"/admin/projects/{project['id']}",
+        json={
+            "milestones": [
+                {"id": old_id, "title": "Updated", "is_done": True, "sort_order": 0},
+                {"title": "New", "is_done": False, "sort_order": 1},
+            ]
+        },
+        headers=headers,
+    )
+
+    assert updated.status_code == 200
+    assert [item["title"] for item in updated.json()["milestones"]] == ["Updated", "New"]
+    assert updated.json()["milestones"][0]["is_done"] is True
 
 
 async def test_admin_delete_project(client: AsyncClient, test_session: async_sessionmaker):
     uid = await _make_user(test_session, "client@test.com")
     headers = await _admin_headers(client, test_session)
 
-    create = await client.post("/admin/projects", json={"title": "ToDelete", "owner_id": uid}, headers=headers)
+    create = await client.post(
+        "/admin/projects", json={"title": "ToDelete", "owner_id": uid}, headers=headers
+    )
     pid = create.json()["id"]
 
     r = await client.delete(f"/admin/projects/{pid}", headers=headers)
@@ -92,10 +140,14 @@ async def test_admin_manage_milestones(client: AsyncClient, test_session: async_
     uid = await _make_user(test_session, "client@test.com")
     headers = await _admin_headers(client, test_session)
 
-    create = await client.post("/admin/projects", json={"title": "P", "owner_id": uid}, headers=headers)
+    create = await client.post(
+        "/admin/projects", json={"title": "P", "owner_id": uid}, headers=headers
+    )
     pid = create.json()["id"]
 
-    add = await client.post(f"/admin/projects/{pid}/milestones", json={"title": "M1"}, headers=headers)
+    add = await client.post(
+        f"/admin/projects/{pid}/milestones", json={"title": "M1"}, headers=headers
+    )
     assert add.status_code == 200
     mid = add.json()["milestones"][0]["id"]
 

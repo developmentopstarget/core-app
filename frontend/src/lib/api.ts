@@ -16,8 +16,16 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   })
 
   if (!response.ok) {
+    if (response.status === 401 && token) {
+      localStorage.removeItem('access_token')
+      window.dispatchEvent(new Event('auth-expired'))
+    }
     const body = await response.json().catch(() => ({}))
     throw new Error(body?.detail ?? `API error ${response.status}: ${response.statusText}`)
+  }
+
+  if (response.status === 204) {
+    return undefined as T
   }
 
   return response.json() as Promise<T>

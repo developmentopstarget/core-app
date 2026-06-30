@@ -16,13 +16,18 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<number | null>(null)
+  const [error, setError] = useState('')
 
   const load = () => {
+    setError('')
     Promise.all([
       api.get<Project[]>('/admin/projects'),
       api.get<User[]>('/admin/users'),
     ])
       .then(([p, u]) => { setProjects(p); setUsers(u) })
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : 'Failed to load admin data')
+      })
       .finally(() => setLoading(false))
   }
 
@@ -31,9 +36,12 @@ export default function AdminDashboard() {
   const deleteProject = async (id: number) => {
     if (!window.confirm('Delete this project?')) return
     setDeleting(id)
+    setError('')
     try {
       await api.delete(`/admin/projects/${id}`)
       setProjects((prev) => prev.filter((p) => p.id !== id))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete project')
     } finally {
       setDeleting(null)
     }
@@ -58,6 +66,11 @@ export default function AdminDashboard() {
         </div>
 
         {loading && <p className="text-gray-400 text-sm">Loading...</p>}
+        {error && (
+          <div role="alert" className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         {!loading && projects.length === 0 && (
           <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">

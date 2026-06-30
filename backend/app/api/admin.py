@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -10,12 +10,19 @@ from app.core.dependencies import require_admin
 from app.models.project import Milestone, Project
 from app.models.user import User
 from app.schemas.auth import UserResponse
-from app.schemas.project import MilestoneCreate, MilestoneUpdate, ProjectCreate, ProjectResponse, ProjectUpdate
+from app.schemas.project import (
+    MilestoneCreate,
+    MilestoneUpdate,
+    ProjectCreate,
+    ProjectResponse,
+    ProjectUpdate,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
 # ── Users ──────────────────────────────────────────────────────────────────────
+
 
 @router.get("/users", response_model=list[UserResponse])
 async def list_users(
@@ -27,6 +34,7 @@ async def list_users(
 
 
 # ── Projects ───────────────────────────────────────────────────────────────────
+
 
 @router.get("/projects", response_model=list[ProjectResponse])
 async def list_all_projects(
@@ -56,7 +64,7 @@ async def create_project(
         description=payload.description,
         status=payload.status,
         progress=payload.progress,
-        preview_url=payload.preview_url,
+        preview_url=str(payload.preview_url) if payload.preview_url else None,
         notes=payload.notes,
         owner_id=payload.owner_id,
     )
@@ -64,7 +72,14 @@ async def create_project(
     await db.flush()
 
     for i, ms in enumerate(payload.milestones):
-        db.add(Milestone(project_id=project.id, title=ms.title, is_done=ms.is_done, sort_order=ms.sort_order or i))
+        db.add(
+            Milestone(
+                project_id=project.id,
+                title=ms.title,
+                is_done=ms.is_done,
+                sort_order=ms.sort_order or i,
+            )
+        )
 
     await db.commit()
     await db.refresh(project)
@@ -94,10 +109,34 @@ async def update_project(
         if not owner:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Owner not found")
 
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    changes = payload.model_dump(exclude_unset=True)
+    milestone_changes = changes.pop("milestones", None)
+    for field, value in changes.items():
+        if field == "preview_url" and value is not None:
+            value = str(value)
         setattr(project, field, value)
 
-    project.updated_at = datetime.now(timezone.utc)
+    if milestone_changes is not None:
+        existing = {milestone.id: milestone for milestone in project.milestones}
+        submitted_ids = {item["id"] for item in milestone_changes if item.get("id") is not None}
+        if not submitted_ids.issubset(existing):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A milestone does not belong to this project",
+            )
+        for milestone_id, milestone in existing.items():
+            if milestone_id not in submitted_ids:
+                await db.delete(milestone)
+        for item in milestone_changes:
+            milestone_id = item.pop("id", None)
+            if milestone_id is None:
+                db.add(Milestone(project_id=project.id, **item))
+            else:
+                milestone = existing[milestone_id]
+                for field, value in item.items():
+                    setattr(milestone, field, value)
+
+    project.updated_at = datetime.now(UTC)
     await db.commit()
     await db.refresh(project)
 
@@ -123,6 +162,7 @@ async def delete_project(
 
 # ── Milestones ─────────────────────────────────────────────────────────────────
 
+
 @router.post("/projects/{project_id}/milestones", response_model=ProjectResponse)
 async def add_milestone(
     project_id: int,
@@ -135,8 +175,15 @@ async def add_milestone(
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-    db.add(Milestone(project_id=project_id, title=payload.title, is_done=payload.is_done, sort_order=payload.sort_order))
-    project.updated_at = datetime.now(timezone.utc)
+    db.add(
+        Milestone(
+            project_id=project_id,
+            title=payload.title,
+            is_done=payload.is_done,
+            sort_order=payload.sort_order,
+        )
+    )
+    project.updated_at = datetime.now(UTC)
     await db.commit()
 
     result = await db.execute(
@@ -163,7 +210,7 @@ async def update_milestone(
     project_id = milestone.project_id
     result2 = await db.execute(select(Project).where(Project.id == project_id))
     proj = result2.scalar_one()
-    proj.updated_at = datetime.now(timezone.utc)
+    proj.updated_at = datetime.now(UTC)
     await db.commit()
 
     result3 = await db.execute(

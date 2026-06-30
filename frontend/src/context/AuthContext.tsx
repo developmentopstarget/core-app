@@ -35,6 +35,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [fetchMe])
 
+  useEffect(() => {
+    const handleExpired = () => setUser(null)
+    window.addEventListener('auth-expired', handleExpired)
+    return () => window.removeEventListener('auth-expired', handleExpired)
+  }, [])
+
   const login = async (email: string, password: string) => {
     const data = await api.post<{ access_token: string }>('/auth/login', { email, password })
     localStorage.setItem('access_token', data.access_token)
@@ -58,6 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
+// AuthProvider and its hook intentionally live together as one context module.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthState {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth must be used within AuthProvider')

@@ -33,9 +33,7 @@ async def get_my_project(
     db: AsyncSession = Depends(get_db),
 ) -> Project:
     result = await db.execute(
-        select(Project)
-        .where(Project.id == project_id)
-        .options(selectinload(Project.milestones))
+        select(Project).where(Project.id == project_id).options(selectinload(Project.milestones))
     )
     project = result.scalar_one_or_none()
     if not project:

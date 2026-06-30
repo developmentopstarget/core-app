@@ -1,6 +1,6 @@
 # core-app
 
-A production-style starter template for building web apps with a clean separation between frontend and backend.
+A production-oriented client portal with separate React and FastAPI applications.
 
 ## Stack
 
@@ -8,10 +8,20 @@ A production-style starter template for building web apps with a clean separatio
 |----------|-------------------------------------|
 | Frontend | React + TypeScript + Vite + Tailwind CSS |
 | Backend  | FastAPI + Python 3.11+              |
-| Database | PostgreSQL (future — see below)     |
+| Database | SQLite (development), PostgreSQL (production) |
 | API      | REST JSON                           |
 
 Mobile-first layout by default. Frontend and backend are fully separate applications.
+
+## Features
+
+- Public landing page and open client registration
+- JWT authentication with client and admin roles
+- Client-specific projects, progress, milestones, previews, and notes
+- Admin user listing and project/milestone management
+- Async SQLAlchemy persistence and Alembic migrations
+- Automated backend tests and GitHub Actions CI
+- Docker Compose deployment with PostgreSQL
 
 ---
 
@@ -47,9 +57,12 @@ core-app/
         health.py        ← GET /health route
       core/
         config.py        ← Pydantic settings
+      models/            ← SQLAlchemy models
       schemas/           ← Pydantic request/response models
       services/          ← Business logic
     pyproject.toml
+    alembic/             ← Database migrations
+    alembic.ini
     .env.example
 ```
 
@@ -88,6 +101,7 @@ uv venv
 source .venv/bin/activate      # Windows: .venv\Scripts\activate
 uv pip install -e ".[dev]"
 cp .env.example .env
+alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
@@ -99,6 +113,7 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 cp .env.example .env
+alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
@@ -107,6 +122,21 @@ Backend runs at: `http://localhost:8000`
 API docs: `http://localhost:8000/docs`
 
 Health check: `http://localhost:8000/health`
+
+Readiness check: `http://localhost:8000/ready`
+
+Apply migrations before starting a deployed backend:
+
+```bash
+alembic upgrade head
+```
+
+If a local SQLite database was created by an older version of the application, back it up and
+baseline it once before applying future migrations:
+
+```bash
+alembic stamp 20260701_0001
+```
 
 ---
 
@@ -120,6 +150,7 @@ Health check: `http://localhost:8000/health`
 | `npm run build`   | Production build              |
 | `npm run preview` | Preview production build      |
 | `npm run lint`    | Run ESLint                    |
+| `npm test`        | Run frontend tests            |
 
 ### Backend
 
@@ -129,6 +160,7 @@ Health check: `http://localhost:8000/health`
 | `pytest`                                    | Run tests                 |
 | `ruff check .`                              | Lint                      |
 | `ruff format .`                             | Format                    |
+| `alembic upgrade head`                      | Apply migrations          |
 
 ---
 
@@ -145,21 +177,24 @@ VITE_API_URL=http://localhost:8000
 ```
 ALLOWED_ORIGINS=["http://localhost:5173"]
 APP_ENV=development
+SECRET_KEY=change-me-in-production
+DATABASE_URL=sqlite+aiosqlite:///./app.db
 ```
 
 ---
 
-## Adding PostgreSQL (Future)
+## Production with Docker
 
-The backend is structured to accept PostgreSQL without refactoring existing code:
+Set production secrets and start the PostgreSQL-backed stack:
 
-1. Add `asyncpg`, `sqlalchemy[asyncio]`, and `alembic` to `pyproject.toml`.
-2. Create `backend/app/db/` with `session.py`, `base.py`, and `models/`.
-3. Add `DATABASE_URL` to `backend/.env.example`.
-4. Initialize Alembic: `alembic init alembic` inside `backend/`.
-5. Wire the DB session into route dependencies.
+```bash
+export SECRET_KEY="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+export POSTGRES_PASSWORD="replace-with-a-strong-password"
+docker compose up --build
+```
 
-No ORM code or migration files are included in this starter — add them when the schema is defined.
+The frontend is served at `http://localhost:8080`. Production startup rejects placeholder secrets
+and SQLite URLs. Change the CORS origins and frontend API URL for the deployment domain.
 
 ---
 
