@@ -1,18 +1,16 @@
 import { FormEvent, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function LoginPage() {
   const { login, user } = useAuth()
-  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   if (user) {
-    navigate(user.role === 'admin' ? '/admin' : '/dashboard', { replace: true })
-    return null
+    return <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />
   }
 
   const handleSubmit = async (e: FormEvent) => {
