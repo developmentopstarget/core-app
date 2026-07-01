@@ -34,4 +34,16 @@ describe('api client', () => {
 
     await expect(api.get('/missing')).rejects.toThrow('Not found')
   })
+
+  it('sends the Authorization header on GET requests when a token is stored', async () => {
+    vi.stubGlobal('localStorage', { getItem: vi.fn(() => 'stored-token') })
+    const fetchMock = vi.fn<typeof fetch>(async () => Response.json({ id: 1 }, { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await api.get('/auth/me')
+
+    const [, init] = fetchMock.mock.calls[0]
+    const headers = new Headers(init?.headers)
+    expect(headers.get('Authorization')).toBe('Bearer stored-token')
+  })
 })

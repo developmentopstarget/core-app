@@ -7,12 +7,12 @@ function getToken(): string | null {
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = getToken()
   const response = await fetch(`${BASE_URL}${path}`, {
+    ...options,
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
-    ...options,
   })
 
   if (!response.ok) {
