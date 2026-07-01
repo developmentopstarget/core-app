@@ -79,3 +79,7 @@ pnpm-debug.log*
 # Claude Code local state
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+
+# Claude Code local state
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
