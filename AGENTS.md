@@ -10,7 +10,7 @@ This file provides guidance for AI agents (Claude, Gemini, GPT, Codex, etc.) wor
 |----------|-------------------------------------|
 | Frontend | React + TypeScript + Vite + Tailwind CSS |
 | Backend  | FastAPI + Python                    |
-| Database | PostgreSQL (future — not yet wired) |
+| Database | SQLite (development), PostgreSQL (production) |
 | API      | REST JSON                           |
 
 ---
@@ -29,7 +29,7 @@ This file provides guidance for AI agents (Claude, Gemini, GPT, Codex, etc.) wor
 
 - **Django** — do not use. FastAPI is the default backend framework.
 - **Next.js** — do not use. Vite + React is the default frontend setup.
-- **SQLAlchemy (yet)** — backend is structured to add it cleanly, but do not add it unless asked.
+- **SQLAlchemy/Alembic are already part of the backend persistence layer.** Do not replace them unless explicitly asked.
 - **Redux** — do not add global state managers unless asked. Use React context or Zustand if needed.
 
 ---
@@ -42,8 +42,11 @@ backend/
     main.py          ← FastAPI app entry point, CORS config, router registration
     api/             ← Route handlers grouped by feature
     core/            ← Config, settings (Pydantic BaseSettings)
+    models/          ← SQLAlchemy models
     schemas/         ← Pydantic request/response models
     services/        ← Business logic, separated from route handlers
+  alembic/           ← Database migrations
+  alembic.ini
   pyproject.toml
   .env.example
 ```
@@ -85,11 +88,59 @@ frontend/
 
 ---
 
-## Adding PostgreSQL (Future)
+## Database and Migrations
 
-When asked to add PostgreSQL:
-1. Add `asyncpg`, `sqlalchemy[asyncio]`, and `alembic` to `pyproject.toml`.
-2. Create `backend/app/db/` with `session.py`, `base.py`, and `models/`.
-3. Add `DATABASE_URL` to `.env.example`.
-4. Wire up `alembic` for migrations in `backend/`.
-5. Do not add any ORM models until the schema is discussed.
+- Development uses SQLite by default.
+- Production uses PostgreSQL through Docker Compose/deployment configuration.
+- Async SQLAlchemy is the persistence layer.
+- Alembic is used for database migrations.
+- Do not change database engines, ORM structure, or migration strategy unless explicitly asked.
+
+---
+
+## Project Handoff Rule
+
+Every project must keep a root-level `handoff.md` file.
+
+Before ending a coding session, running `/clear`, switching AI tools, stopping work for the day, opening a PR, merging a PR, debugging a major issue, or changing deployment/config behavior, update `handoff.md`.
+
+The handoff must capture the current project state only. Do not include old unrelated conversation history.
+
+Required sections:
+
+# Goal
+
+What we are trying to build, fix, or ship.
+
+## Current State
+
+Include:
+- current branch
+- working tree status
+- what works
+- what is still broken
+- latest test/build status if known
+
+## Files in Flight
+
+Files actively edited or likely relevant next.
+
+## Changed This Session
+
+What was touched, created, deleted, refactored, configured, or tested.
+
+## Failed Attempts
+
+What was tried but did not work, including the reason if known.
+
+## Important Context
+
+Decisions, assumptions, constraints, warnings, credentials/account context, deployment notes, or “do not change” items.
+
+## Next Step
+
+The single next action to take first in a fresh session.
+
+## Commands to Run First
+
+Exact commands the next AI/dev session should run before editing.

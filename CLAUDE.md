@@ -10,7 +10,7 @@ This is a production-style starter template using:
 
 - **Frontend:** React + TypeScript + Vite + Tailwind CSS
 - **Backend:** FastAPI + Python
-- **Database:** PostgreSQL (future — not yet added)
+- **Database:** SQLite (development), PostgreSQL (production)
 - **API style:** REST JSON
 
 ---
@@ -23,7 +23,7 @@ This is a production-style starter template using:
 - **Do not commit `.env` files.** Only `.env.example` is tracked.
 - **Do not run `git add .`** — stage files by name only.
 - **Do not commit without showing the diff and receiving user approval.**
-- **Do not add PostgreSQL** until explicitly asked.
+- **Do not replace the existing SQLite/PostgreSQL + async SQLAlchemy/Alembic persistence setup** unless explicitly asked.
 
 ---
 
@@ -58,6 +58,59 @@ This is a production-style starter template using:
 
 ---
 
-## Future PostgreSQL
+## Database and Migrations
 
-When asked, follow the plan in `AGENTS.md` under "Adding PostgreSQL (Future)".
+- Development uses SQLite by default.
+- Production uses PostgreSQL.
+- Async SQLAlchemy is the persistence layer.
+- Alembic is used for migrations.
+- Follow `AGENTS.md` for database and migration conventions.
+
+---
+
+## Project Handoff Rule
+
+Every project must keep a root-level `handoff.md` file.
+
+Before ending a coding session, running `/clear`, switching AI tools, stopping work for the day, opening a PR, merging a PR, debugging a major issue, or changing deployment/config behavior, update `handoff.md`.
+
+The handoff must capture the current project state only. Do not include old unrelated conversation history.
+
+Required sections:
+
+# Goal
+
+What we are trying to build, fix, or ship.
+
+## Current State
+
+Include:
+- current branch
+- working tree status
+- what works
+- what is still broken
+- latest test/build status if known
+
+## Files in Flight
+
+Files actively edited or likely relevant next.
+
+## Changed This Session
+
+What was touched, created, deleted, refactored, configured, or tested.
+
+## Failed Attempts
+
+What was tried but did not work, including the reason if known.
+
+## Important Context
+
+Decisions, assumptions, constraints, warnings, credentials/account context, deployment notes, or “do not change” items.
+
+## Next Step
+
+The single next action to take first in a fresh session.
+
+## Commands to Run First
+
+Exact commands the next AI/dev session should run before editing.

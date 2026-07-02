@@ -10,7 +10,7 @@ This file provides guidance for Google Gemini agents working in this repository.
 |----------|-------------------------------------|
 | Frontend | React + TypeScript + Vite + Tailwind CSS |
 | Backend  | FastAPI + Python                    |
-| Database | PostgreSQL (future — not yet wired) |
+| Database | SQLite (development), PostgreSQL (production) |
 | API      | REST JSON                           |
 
 ---
@@ -44,7 +44,8 @@ core-app/
   backend/           ← FastAPI + Python
   AGENTS.md          ← Instructions for all AI agents
   CLAUDE.md          ← Instructions for Claude Code
-  GEMINI.md          ← Instructions for Gemini agents (this file)
+  GEMINI.md          ← Instructions for Gemini agents
+  handoff.md         ← Current project state and next-step handoff
   README.md          ← Human-readable setup guide
 ```
 
@@ -60,10 +61,59 @@ core-app/
 
 ---
 
-## Adding PostgreSQL (Future)
+## Database and Migrations
 
-The backend is structured to accept PostgreSQL cleanly. When asked:
-1. Add `asyncpg`, `sqlalchemy[asyncio]`, `alembic` to `pyproject.toml`.
-2. Create `backend/app/db/` with session, base model, and migration config.
-3. Add `DATABASE_URL` to `.env.example`.
-4. Do not write ORM models until the schema is approved.
+- Development uses SQLite by default.
+- Production uses PostgreSQL.
+- Async SQLAlchemy is the persistence layer.
+- Alembic is used for migrations.
+- Do not change database engines, ORM structure, or migration strategy unless explicitly asked.
+
+---
+
+## Project Handoff Rule
+
+Every project must keep a root-level `handoff.md` file.
+
+Before ending a coding session, running `/clear`, switching AI tools, stopping work for the day, opening a PR, merging a PR, debugging a major issue, or changing deployment/config behavior, update `handoff.md`.
+
+The handoff must capture the current project state only. Do not include old unrelated conversation history.
+
+Required sections:
+
+# Goal
+
+What we are trying to build, fix, or ship.
+
+## Current State
+
+Include:
+- current branch
+- working tree status
+- what works
+- what is still broken
+- latest test/build status if known
+
+## Files in Flight
+
+Files actively edited or likely relevant next.
+
+## Changed This Session
+
+What was touched, created, deleted, refactored, configured, or tested.
+
+## Failed Attempts
+
+What was tried but did not work, including the reason if known.
+
+## Important Context
+
+Decisions, assumptions, constraints, warnings, credentials/account context, deployment notes, or “do not change” items.
+
+## Next Step
+
+The single next action to take first in a fresh session.
+
+## Commands to Run First
+
+Exact commands the next AI/dev session should run before editing.

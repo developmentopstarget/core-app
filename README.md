@@ -32,6 +32,7 @@ core-app/
   AGENTS.md              ← AI agent instructions
   CLAUDE.md              ← Claude Code instructions
   GEMINI.md              ← Gemini agent instructions
+  handoff.md             ← Current project state and next-step handoff
   README.md              ← This file
   .gitignore
 
@@ -205,3 +206,17 @@ and SQLite URLs. Change the CORS origins and frontend API URL for the deployment
 - **Mobile-first** layout — `sm:` and up for larger screens.
 - **REST JSON** — no GraphQL or tRPC unless added explicitly.
 - **Thin route handlers** — business logic lives in `services/`, not in `api/`.
+
+---
+
+## AI Handoff
+
+This project uses `handoff.md` as the active project state checkpoint for AI coding sessions.
+
+Before ending a coding session, switching AI tools, running `/clear`, opening or merging a PR, debugging a major issue, or changing deployment/config behavior, update `handoff.md`.
+
+Fresh AI sessions should read the relevant instruction file plus `handoff.md`, then run:
+
+```bash
+git status
+```
