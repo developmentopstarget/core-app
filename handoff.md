@@ -5,15 +5,15 @@ Build `core-app` as the main client portal and portfolio app, with reliable fron
 ## Current State
 
 - Branch: `setup/playwright-e2e`
-- Latest commit: `2dc7e9b Add Playwright E2E setup`
 - Pull request: https://github.com/developmentopstarget/core-app/pull/4
-- Main handoff workflow is already committed and pushed on `main`.
 - Playwright E2E setup has been added on this branch.
-- Frontend build passes.
-- Playwright smoke test passes locally.
+- Playwright workflow passed.
+- Frontend CI initially failed because Vitest collected the Playwright `.spec.ts` file.
+- Fix is to keep Playwright tests under `frontend/e2e/` with `.e2e.ts` naming.
 
-Verified commands:
+Verified commands after fix:
 - `cd frontend`
+- `npm test`
 - `npm run build`
 - `npm run test:e2e`
 
@@ -24,7 +24,7 @@ Verified commands:
 - `frontend/package.json`
 - `frontend/package-lock.json`
 - `frontend/playwright.config.ts`
-- `frontend/tests/smoke.spec.ts`
+- `frontend/e2e/smoke.e2e.ts`
 - `handoff.md`
 
 ## Changed This Session
@@ -34,24 +34,26 @@ Verified commands:
 - Added Vite-compatible Playwright config.
 - Added root GitHub Actions workflow for Playwright.
 - Added Chromium smoke test.
-- Verified frontend build and E2E test.
 - Opened PR #4 from `setup/playwright-e2e` into `main`.
+- Fixed Vitest conflict by moving Playwright smoke test from `frontend/tests/smoke.spec.ts` to `frontend/e2e/smoke.e2e.ts`.
 
 ## Failed Attempts
 
-- Initial handoff paste was malformed because the pasted markdown included an unclosed fenced code block inside the heredoc content.
+- Initial handoff paste was malformed because the pasted markdown included an unclosed fenced code block inside heredoc content.
+- CI frontend failed because Vitest collected the Playwright test file named `smoke.spec.ts`.
 
 ## Important Context
 
 - GitHub Actions workflows must live at repo root: `.github/workflows/`.
 - Playwright config starts Vite dev server on `127.0.0.1:5173`.
+- Playwright tests should use `.e2e.ts` naming to avoid Vitest collection.
 - Current E2E scope is minimal smoke coverage only.
-- Do not mix unrelated changes into this branch.
-- The PR already exists. New commits pushed to this branch will update the PR automatically.
+- The PR already exists. New commits pushed to this branch will update PR #4 automatically.
+- Do not use `git add .`; stage files explicitly.
 
 ## Next Step
 
-Check PR #4 GitHub Actions result. If it passes, merge the PR into `main`.
+Push the Vitest/Playwright test separation fix, then re-check PR #4 CI.
 
 ## Commands to Run First
 
