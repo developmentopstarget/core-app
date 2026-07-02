@@ -4,14 +4,14 @@ Build `core-app` as the main client portal and portfolio app, with reliable fron
 
 ## Current State
 
-- Branch: `setup/playwright-e2e`
-- Pull request: https://github.com/developmentopstarget/core-app/pull/4
-- Playwright E2E setup has been added on this branch.
-- Playwright workflow passed.
-- Frontend CI initially failed because Vitest collected the Playwright `.spec.ts` file.
-- Fix is to keep Playwright tests under `frontend/e2e/` with `.e2e.ts` naming.
+- Branch: `main`
+- Project handoff workflow is committed and pushed.
+- Playwright E2E setup was merged through PR #4.
+- Frontend CI, backend CI, and Playwright checks passed before merge.
+- Frontend has a Chromium Playwright smoke test.
+- GitHub Actions runs Playwright E2E checks for frontend changes.
 
-Verified commands after fix:
+Verified before merge:
 - `cd frontend`
 - `npm test`
 - `npm run build`
@@ -19,6 +19,9 @@ Verified commands after fix:
 
 ## Files in Flight
 
+No active files are currently in flight.
+
+Recently changed files:
 - `.github/workflows/playwright.yml`
 - `frontend/.gitignore`
 - `frontend/package.json`
@@ -29,18 +32,19 @@ Verified commands after fix:
 
 ## Changed This Session
 
-- Created branch `setup/playwright-e2e`.
-- Added Playwright dependency and frontend scripts.
-- Added Vite-compatible Playwright config.
-- Added root GitHub Actions workflow for Playwright.
-- Added Chromium smoke test.
-- Opened PR #4 from `setup/playwright-e2e` into `main`.
-- Fixed Vitest conflict by moving Playwright smoke test from `frontend/tests/smoke.spec.ts` to `frontend/e2e/smoke.e2e.ts`.
+- Added Project Handoff Rule to `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md`.
+- Created root-level `handoff.md`.
+- Added README mention for AI handoff.
+- Added Playwright E2E setup.
+- Added GitHub Actions workflow for Playwright.
+- Fixed Vitest conflict by moving Playwright test from `frontend/tests/smoke.spec.ts` to `frontend/e2e/smoke.e2e.ts`.
+- PR #4 checks passed and was merged.
 
 ## Failed Attempts
 
 - Initial handoff paste was malformed because the pasted markdown included an unclosed fenced code block inside heredoc content.
-- CI frontend failed because Vitest collected the Playwright test file named `smoke.spec.ts`.
+- Frontend CI initially failed because Vitest collected the Playwright `.spec.ts` file.
+- Fixed by using `frontend/e2e/` and `.e2e.ts` naming for Playwright tests.
 
 ## Important Context
 
@@ -48,16 +52,16 @@ Verified commands after fix:
 - Playwright config starts Vite dev server on `127.0.0.1:5173`.
 - Playwright tests should use `.e2e.ts` naming to avoid Vitest collection.
 - Current E2E scope is minimal smoke coverage only.
-- The PR already exists. New commits pushed to this branch will update PR #4 automatically.
+- Future AI sessions must update `handoff.md` before stopping, switching tools, clearing context, opening or merging PRs, debugging major issues, or changing deployment/config behavior.
 - Do not use `git add .`; stage files explicitly.
 
 ## Next Step
 
-Push the Vitest/Playwright test separation fix, then re-check PR #4 CI.
+Continue core-app feature work from a clean `main` branch.
 
 ## Commands to Run First
 
 - `pwd`
 - `git branch --show-current`
 - `git status`
-- `git log --oneline -3`
+- `git log --oneline -5`
