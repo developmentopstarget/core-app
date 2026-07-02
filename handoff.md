@@ -1,88 +1,61 @@
 # Goal
 
-Build `core-app` as the main client portal and portfolio app.
-
-The app should include:
-- public landing/portfolio pages
-- user registration and login
-- client dashboard
-- project/progress visibility for customers
-- admin/project management workflows
-- production-ready React + FastAPI structure
+Build `core-app` as the main client portal and portfolio app, with reliable frontend E2E test coverage.
 
 ## Current State
 
-- Project: `core-app`
-- Stack: React + TypeScript frontend, FastAPI backend
-- Repo owner/account: `developmentopstarget`
-- Active AI instruction files:
-  - `AGENTS.md`
-  - `CLAUDE.md`
-  - `GEMINI.md`
-- Handoff workflow is now required in this project.
+- Branch: `setup/playwright-e2e`
+- Latest commit: `2dc7e9b Add Playwright E2E setup`
+- Pull request: https://github.com/developmentopstarget/core-app/pull/4
+- Main handoff workflow is already committed and pushed on `main`.
+- Playwright E2E setup has been added on this branch.
+- Frontend build passes.
+- Playwright smoke test passes locally.
 
-Current branch and git status must be verified before editing:
-
-```bash
-git branch --show-current
-git status
-```
-
-Known project context:
-- `core-app` was created from `fast-webapp-starter`.
-- It is the active main app.
-- It is intended to become the real client portal and portfolio site.
-- Use React + FastAPI as the default stack.
-- Keep code production-ready, maintainable, and mobile-first.
+Verified commands:
+- `cd frontend`
+- `npm run build`
+- `npm run test:e2e`
 
 ## Files in Flight
 
-No active files are confirmed yet.
-
-Likely important files/directories:
-- `AGENTS.md`
-- `CLAUDE.md`
-- `GEMINI.md`
+- `.github/workflows/playwright.yml`
+- `frontend/.gitignore`
+- `frontend/package.json`
+- `frontend/package-lock.json`
+- `frontend/playwright.config.ts`
+- `frontend/tests/smoke.spec.ts`
 - `handoff.md`
-- `frontend/`
-- `backend/`
-- Docker/deployment config files
-- test files
 
 ## Changed This Session
 
-- Added the Project Handoff Rule to the project AI instruction files:
-  - `AGENTS.md`
-  - `CLAUDE.md`
-  - `GEMINI.md`
-- Created this root-level `handoff.md`.
-- Added the Project Handoff System note in Obsidian/AI-OS.
+- Created branch `setup/playwright-e2e`.
+- Added Playwright dependency and frontend scripts.
+- Added Vite-compatible Playwright config.
+- Added root GitHub Actions workflow for Playwright.
+- Added Chromium smoke test.
+- Verified frontend build and E2E test.
+- Opened PR #4 from `setup/playwright-e2e` into `main`.
 
 ## Failed Attempts
 
-None recorded for this handoff setup.
+- Initial handoff paste was malformed because the pasted markdown included an unclosed fenced code block inside the heredoc content.
 
 ## Important Context
 
-- Every AI coding session must update `handoff.md` before stopping, running `/clear`, switching AI tools, opening/merging PRs, debugging major issues, or changing deployment/config behavior.
-- `handoff.md` should capture only the current useful project state.
-- Do not rely only on `/compact` for Claude Code session continuity.
-- Fresh AI sessions should read the relevant AI instruction file and `handoff.md`, then run `git status` before editing.
-- Correct Gemini filename is `GEMINI.md`.
-- Avoid typo files such as:
-  - `GIMINI.md`
-  - `GEMENI.md`
-  - `AGENT.md`
+- GitHub Actions workflows must live at repo root: `.github/workflows/`.
+- Playwright config starts Vite dev server on `127.0.0.1:5173`.
+- Current E2E scope is minimal smoke coverage only.
+- Do not mix unrelated changes into this branch.
+- The PR already exists. New commits pushed to this branch will update the PR automatically.
 
 ## Next Step
 
-Verify filenames and git state, then continue the current `core-app` work from a clean branch.
+Check PR #4 GitHub Actions result. If it passes, merge the PR into `main`.
 
 ## Commands to Run First
 
-```bash
-pwd
-git branch --show-current
-git status
-ls -la | grep -E 'AGENT|CLAUDE|GEM|handoff'
-```
+- `pwd`
+- `git branch --show-current`
+- `git status`
+- `git log --oneline -3`
